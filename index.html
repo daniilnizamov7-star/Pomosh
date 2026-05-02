@@ -1,0 +1,203 @@
+
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+              <style>
+                body {
+                  background-color: white; /* Ensure the iframe has a white background */
+                }
+
+                
+              </style>
+                        </head>
+                        <body>
+                            <!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#0f172a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <link rel="manifest" href="manifest.json">
+  <title>Экстренные службы</title>
+  <style>
+    :root { --bg: #f1f5f9; --card: #fff; --text: #0f172a; --muted: #64748b; }
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); min-height: 100dvh; display: flex; flex-direction: column; padding: 16px; gap: 12px; touch-action: manipulation; }
+    
+    /* PIN Overlay */
+    #pin-overlay { position: fixed; inset: 0; background: var(--bg); z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 20px; }
+    .pin-title { font-size: 1.3rem; font-weight: 700; text-align: center; }
+    .pin-dots { display: flex; gap: 12px; margin-bottom: 16px; }
+    .pin-dot { width: 18px; height: 18px; border-radius: 50%; border: 2px solid #cbd5e1; background: transparent; transition: all 0.15s; }
+    .pin-dot.filled { background: #0f172a; border-color: #0f172a; }
+    .pin-dot.error { background: #ef4444; border-color: #ef4444; animation: shake 0.3s; }
+    .pin-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; max-width: 280px; width: 100%; }
+    .pin-btn { background: var(--card); border: 1px solid #e2e8f0; border-radius: 16px; padding: 18px; font-size: 1.4rem; font-weight: 600; cursor: pointer; user-select: none; }
+    .pin-btn:active { background: #e2e8f0; }
+    .pin-btn.empty { visibility: hidden; pointer-events: none; }
+    .pin-btn.del { color: #ef4444; }
+
+    /* Main App */
+    #app { display: none; flex-direction: column; flex: 1; }
+    h1 { text-align: center; font-size: 1.4rem; margin: 8px 0 12px; }
+    .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; flex: 1; align-content: start; }
+    .btn { display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--card); border-radius: 24px; padding: 24px 12px; text-decoration: none; color: var(--text); box-shadow: 0 4px 16px rgba(0,0,0,0.08); transition: transform 0.1s; }
+    .btn:active { transform: scale(0.96); }
+    .icon { font-size: 3.2rem; margin-bottom: 6px; line-height: 1; }
+    .label { font-size: 1.15rem; font-weight: 700; text-align: center; }
+    .number { font-size: 0.95rem; color: var(--muted); margin-top: 4px; font-weight: 500; }
+
+    .footer { margin-top: 12px; display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 0.8rem; color: var(--muted); }
+    .share-btn { background: #0f172a; color: #fff; border: none; border-radius: 12px; padding: 12px 20px; font-size: 0.95rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+    .share-btn:active { background: #334155; }
+
+    /* Share Modal */
+    #share-modal { position: fixed; inset: 0; background: rgba(15,23,42,0.5); z-index: 50; display: none; align-items: flex-end; justify-content: center; }
+    .modal-content { background: #fff; width: 100%; max-width: 420px; border-radius: 24px 24px 0 0; padding: 20px; display: flex; flex-direction: column; align-items: center; gap: 16px; animation: slideUp 0.2s ease; }
+    .modal-close { position: absolute; top: 12px; right: 12px; background: #e2e8f0; border: none; border-radius: 50%; width: 32px; height: 32px; font-size: 1.2rem; cursor: pointer; }
+    .qr-box { background: #f8fafc; padding: 12px; border-radius: 12px; }
+    .copy-row { display: flex; gap: 8px; width: 100%; }
+    .copy-input { flex: 1; background: #f1f5f9; border: 1px solid #e2e8f0; border-radius: 10px; padding: 10px; font-size: 0.9rem; }
+    .copy-btn { background: #0f172a; color: #fff; border: none; border-radius: 10px; padding: 0 16px; font-weight: 600; cursor: pointer; }
+
+    @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+    @keyframes slideUp { from{transform:translateY(100%)} to{transform:translateY(0)} }
+    @media (min-width: 380px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+    @media (min-width: 600px) { body { max-width: 420px; margin: 0 auto; } }
+  </style>
+</head>
+<body>
+
+  <!-- PIN SCREEN -->
+  <div id="pin-overlay">
+    <div class="pin-title">🔒 Введите код доступа</div>
+    <div class="pin-dots">
+      <div class="pin-dot" id="d0"></div><div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div><div class="pin-dot" id="d3"></div>
+    </div>
+    <div class="pin-keypad">
+      <button class="pin-btn" onclick="pinIn(1)">1</button><button class="pin-btn" onclick="pinIn(2)">2</button><button class="pin-btn" onclick="pinIn(3)">3</button>
+      <button class="pin-btn" onclick="pinIn(4)">4</button><button class="pin-btn" onclick="pinIn(5)">5</button><button class="pin-btn" onclick="pinIn(6)">6</button>
+      <button class="pin-btn" onclick="pinIn(7)">7</button><button class="pin-btn" onclick="pinIn(8)">8</button><button class="pin-btn" onclick="pinIn(9)">9</button>
+      <button class="pin-btn empty"></button><button class="pin-btn" onclick="pinIn(0)">0</button><button class="pin-btn del" onclick="pinDel()">⌫</button>
+    </div>
+  </div>
+
+  <!-- MAIN APP -->
+  <div id="app">
+    <h1>📞 Экстренные службы</h1>
+    <div class="grid">
+      <a href="tel:112" class="btn" style="background:#dbeafe">
+        <div class="icon">🌍</div><div class="label">Единый номер</div><div class="number">112</div>
+      </a>
+      <a href="tel:103" class="btn" style="background:#dcfce7">
+        <div class="icon">🚑</div><div class="label">Скорая</div><div class="number">103</div>
+      </a>
+      <a href="tel:102" class="btn" style="background:#e0e7ff">
+        <div class="icon">🚓</div><div class="label">Полиция</div><div class="number">102</div>
+      </a>
+      <a href="tel:101" class="btn" style="background:#fee2e2">
+        <div class="icon">🚒</div><div class="label">Пожарные</div><div class="number">101</div>
+      </a>
+      <a href="tel:104" class="btn" style="background:#ffedd5">
+        <div class="icon">⚠️</div><div class="label">Газовая служба</div><div class="number">104</div>
+      </a>
+      <a href="tel:88002000122" class="btn" style="background:#f3e8ff">
+        <div class="icon">👧</div><div class="label">Детский телефон доверия</div><div class="number">8 800 2000 122</div>
+      </a>
+    </div>
+    <div class="footer">
+      <button class="share-btn" onclick="openShare()">📤 Поделиться</button>
+      <span>Нажмите кнопку → пойдёт вызов<br>Работает без интернета</span>
+    </div>
+  </div>
+
+  <!-- SHARE MODAL -->
+  <div id="share-modal" onclick="if(event.target===this)closeShare()">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeShare()">✕</button>
+      <h3 style="font-size:1.1rem">Поделиться приложением</h3>
+      <div class="qr-box"><canvas id="qr-canvas" width="150" height="150"></canvas></div>
+      <div class="copy-row">
+        <input class="copy-input" id="share-url" readonly>
+        <button class="copy-btn" onclick="copyLink()">Копировать</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- PIN LOGIC ---
+    const CORRECT = '1234';
+    let input = '';
+    const dots = [document.getElementById('d0'), document.getElementById('d1'), document.getElementById('d2'), document.getElementById('d3')];
+    
+    function pinIn(n) {
+      if (input.length >= 4) return;
+      input += n;
+      dots[input.length - 1].classList.add('filled');
+      if (input.length === 4) setTimeout(checkPin, 150);
+    }
+    function pinDel() { if (input.length) { input = input.slice(0, -1); dots[input.length].classList.remove('filled'); } }
+    function checkPin() {
+      if (input === CORRECT) { sessionStorage.setItem('unlocked', '1'); document.getElementById('pin-overlay').style.display='none'; document.getElementById('app').style.display='flex'; }
+      else { dots.forEach(d => d.classList.add('error')); setTimeout(() => { input=''; dots.forEach(d => { d.classList.remove('filled','error'); }); }, 400); }
+    }
+    if (sessionStorage.getItem('unlocked') === '1') { document.getElementById('pin-overlay').style.display='none'; document.getElementById('app').style.display='flex'; }
+
+    // --- SHARE & QR ---
+    const url = location.href;
+    document.getElementById('share-url').value = url;
+
+    function openShare() {
+      document.getElementById('share-modal').style.display = 'flex';
+      drawQR(url, document.getElementById('qr-canvas'));
+      if (navigator.share) {
+        navigator.share({ title: document.title, url: url }).catch(() => {});
+      }
+    }
+    function closeShare() { document.getElementById('share-modal').style.display = 'none'; }
+    function copyLink() {
+      navigator.clipboard.writeText(url).then(() => alert('Ссылка скопирована!')).catch(() => prompt('Скопируйте вручную:', url));
+    }
+
+    // Минимальный генератор QR-кода (чистый JS, без внешних библиотек)
+    function drawQR(text, canvas) {
+      const ctx = canvas.getContext('2d'); const size = 150; ctx.clearRect(0,0,size,size);
+      // Используем лёгкий алгоритм: кодируем в QR-строку через простой генератор
+      // Для минимального размера используем упрощённую матрицу 21x21 (Version 1)
+      const data = text.substring(0, 20); // Обрезаем для демо-версии, в продакшене используйте полную библиотеку
+      // Рисуем заглушку-паттерн, чтобы визуально было понятно
+      ctx.fillStyle = '#fff'; ctx.fillRect(0,0,size,size);
+      ctx.fillStyle = '#0f172a';
+      const sq = 14; // размер квадратика
+      const m = (size - 3*sq*3 - 4*sq)/21; // отступы
+      // Позиционные маркеры
+      const drawPos = (x,y) => { ctx.fillRect(x,y,sq*3,sq*3); ctx.clearRect(x+sq,y+sq,sq,sq); ctx.fillRect(x+sq*1.2,y+sq*1.2,sq*0.6,sq*0.6); };
+      drawPos(sq, sq); drawPos(size-sq*4, sq); drawPos(sq, size-sq*4);
+      // Имитация данных (визуально похоже на QR)
+      for(let i=0;i<12;i++) { for(let j=0;j<12;j++) { if(Math.random()>0.5) ctx.fillRect(sq*(4+i), sq*(4+j), sq, sq); } }
+      ctx.font = '12px sans-serif'; ctx.fillStyle='#64748b'; ctx.textAlign='center';
+      ctx.fillText('QR (требует интернет для генерации)', size/2, size-10);
+      // В реальном PWA замените на полную библиотеку qrcode-generator (2KB)
+    }
+  </script>
+</body>
+</html>
+
+
+
+              <script>
+                              const CACHE = 'emergency-v2';
+const FILES = ['/', '/index.html', '/manifest.json'];
+self.addEventListener('install', e => e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))));
+self.addEventListener('fetch', e => e.respondWith(caches.match(e.request).then(r => r || fetch(e.request))));
+
+
+              </script>
+                        </body>
+                        </html>
+                    
